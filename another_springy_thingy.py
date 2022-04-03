@@ -74,9 +74,9 @@ ALPHA = sol[THETAddot]
 
 m = 1
 k = np.array([25, 25, 25, 25])
-req = np.array([5*np.sqrt(2)/2, 5*np.sqrt(2)/2, 5*np.sqrt(2)/2, 5*np.sqrt(2)/2])
-xp = np.array([0, 5, 0, 5])
-yp = np.array([0, 0, 5, 5])
+req = np.array([2.5, 2.5, 2.5, 2.5])
+xp = np.array([2.5, 0, 5, 2.5])
+yp = np.array([0, 2.5, 2.5, 5])
 ro = 5
 vo = 0
 thetao = 20
@@ -85,7 +85,7 @@ cnvrt = np.pi/180
 thetao *= cnvrt
 omegao *= cnvrt
 mr = 0.25
-tf = 60 
+tf = 1 
 
 p = m, k, req, xp, yp
 
@@ -125,9 +125,11 @@ l = np.asarray([(r[i] - mr)/nl[i] for i in range(4)])
 h = np.sqrt(mr**2 - (0.5 * l)**2)
 flipa = np.zeros((4,nframes))
 flipb = np.zeros((4,nframes))
+flipc = np.zeros((4,nframes))
 for i in range(4):
 	flipa[i] = np.asarray([-1 if x[j]>xp[i] and y[j]<yp[i] else 1 for j in range(nframes)])
 	flipb[i] = np.asarray([-1 if x[j]<xp[i] and y[j]>yp[i] else 1 for j in range(nframes)])
+	flipc[i] = np.asarray([-1 if x[j]<xp[i] else 1 for j in range(nframes)])
 xlo = np.zeros((4,nframes))
 ylo = np.zeros((4,nframes))
 for i in range(4):
@@ -136,11 +138,11 @@ for i in range(4):
 xl = np.zeros((4,max(nl),nframes))
 yl = np.zeros((4,max(nl),nframes))
 for i in range(4):
-	xl[i][0] = xlo[i] + np.sign((yp[i]-y)*flipa[i]*flipb[i]) * 0.5 * l[i] * np.sin(theta[i]) - np.sign((yp[i]-y)*flipa[i]*flipb[i]) * h[i] * np.sin(np.pi/2 - theta[i])
-	yl[i][0] = ylo[i] + 0.5 * l[i] * np.cos(theta[i]) + h[i] * np.cos(np.pi/2 - theta[i])
+	xl[i][0] = xlo[i] + np.sign((yp[i]-y)*flipa[i]*flipb[i]) * 0.5 * l[i] * np.sin(theta[i]) - np.sign((yp[i]-y)*flipa[i]*flipb[i]) * flipc[i] * h[i] * np.sin(np.pi/2 - theta[i])
+	yl[i][0] = ylo[i] + 0.5 * l[i] * np.cos(theta[i]) + flipc[i] * h[i] * np.cos(np.pi/2 - theta[i])
 	for j in range(1,nl[i]):
-		xl[i][j] = xlo[i] + np.sign((yp[i]-y)*flipa[i]*flipb[i]) * (0.5 + j) * l[i] * np.sin(theta[i]) - np.sign((yp[i]-y)*flipa[i]*flipb[i]) * (-1)**j * h[i] * np.sin(np.pi/2 - theta[i])
-		yl[i][j] = ylo[i] + (0.5 + j) * l[i] * np.cos(theta[i]) + (-1)**j * h[i] * np.cos(np.pi/2 - theta[i])
+		xl[i][j] = xlo[i] + np.sign((yp[i]-y)*flipa[i]*flipb[i]) * (0.5 + j) * l[i] * np.sin(theta[i]) - np.sign((yp[i]-y)*flipa[i]*flipb[i]) * flipc[i] * (-1)**j * h[i] * np.sin(np.pi/2 - theta[i])
+		yl[i][j] = ylo[i] + (0.5 + j) * l[i] * np.cos(theta[i]) + flipc[i] * (-1)**j * h[i] * np.cos(np.pi/2 - theta[i])
 
 fig, a=plt.subplots()
 
@@ -177,8 +179,8 @@ def run(frame):
 	ax.set_facecolor('xkcd:black')
 
 ani=animation.FuncAnimation(fig,run,frames=nframes)
-writervideo = animation.FFMpegWriter(fps=nfps)
-ani.save('another_springy_thingy.mp4', writer=writervideo)
+#writervideo = animation.FFMpegWriter(fps=nfps)
+#ani.save('another_springy_thingy.mp4', writer=writervideo)
 plt.show()
 
 
